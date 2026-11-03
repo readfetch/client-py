@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 __all__ = [
+    "Client",
     "buyer_address",
     "call",
     "call_with_meta",
@@ -38,6 +39,10 @@ __all__ = [
 def __getattr__(name: str) -> Any:
     if name not in __all__:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if name == "Client":
+        from readfetch_client.simple import Client
+
+        return Client
     if name in ("payment_config", "buyer_address", "readfetch_url"):
         from readfetch_client import config as cfg
 

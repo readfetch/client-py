@@ -12,31 +12,34 @@ pip install readfetch-client
 
 ## Use
 
+```python
+from readfetch import Client
+
+rf = Client(private_key="0x…")  # funded account with USDC on Base; or export EVM_PRIVATE_KEY
+result = rf.fetch("https://example.com/article")
+print(result["text"])
+```
+
+`fetch()` calls **`/v1/text`** (article `text` in the JSON). x402 **402 → sign → retry** is automatic. Inside asyncio, use `await rf.text(url)` instead of sync `fetch()`.
+
+Lower-level API (async helpers, every catalog route):
+
 ```bash
 export EVM_PRIVATE_KEY=0x…   # paid routes only
 ```
 
 ```python
 import asyncio
-from readfetch_client import (
-    call,
-    probe_with_meta,
-    readfetch_text,
-    readfetch_map,
-    readfetch_crawl_status,
-    submit_feedback,
-    submit_claim,
-)
+from readfetch import Client
 
 async def main():
-    check, request_id = await probe_with_meta("https://example.com")
+    rf = Client()
+    check = rf.probe("https://example.com")
     if not check.get("challenge"):
-        await readfetch_text("https://example.com")
-    await readfetch_map({"url": "https://example.com", "max_urls": 20})
-    job = await call("crawl", {"url": "https://example.com", "max_pages": 3})
-    await readfetch_crawl_status(job["id"])
-    if request_id:
-        await submit_feedback(request_id, "integration", "…")
+        rf.fetch("https://example.com")
+    page = await rf.call("map", {"url": "https://example.com", "limit": 20})
+    job = await rf.call("crawl", {"url": "https://example.com", "max_pages": 3})
+    await rf.call("crawl_status", None, path_params={"id": job["job_id"]})
 
 asyncio.run(main())
 ```
@@ -77,4 +80,4 @@ async with x402_http_client() as http:
 | `READFETCH_MAX_PAYMENT_USD` | `1` | Per-payment spend cap |
 | `READFETCH_DEV=1` | off | Allow local base URL for integration tests |
 
-MCP: [`@readfetch/mcp-x402-proxy@0.1.12`](https://github.com/readfetch/mcp-x402-proxy). Feedback: [docs#feedback](https://readfetch.com/docs#feedback).
+MCP: [`@readfetch/mcp-x402-proxy@0.1.14`](https://github.com/readfetch/mcp-x402-proxy). Feedback: [docs#feedback](https://readfetch.com/docs#feedback).

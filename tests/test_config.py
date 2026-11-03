@@ -60,6 +60,13 @@ class ConfigTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             max_payment_usd({"READFETCH_MAX_PAYMENT_USD": "101"})
 
+    def test_normalize_account_hex(self) -> None:
+        from readfetch_client.config import normalize_account_hex
+
+        self.assertEqual(normalize_account_hex("0x" + "AB" * 32), "0x" + "ab" * 32)
+        with self.assertRaises(ValueError):
+            normalize_account_hex("0x1234")
+
 
 if __name__ == "__main__":
     unittest.main()

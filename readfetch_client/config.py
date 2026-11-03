@@ -95,16 +95,25 @@ def x402_network(env: Mapping[str, str] | None = None) -> str:
     return "eip155:8453"
 
 
+def normalize_account_hex(raw: str) -> str:
+    """Normalize a private key hex string (64 bytes, optional 0x)."""
+    stripped = raw.strip()
+    hex_key = stripped if stripped.startswith("0x") else f"0x{stripped}"
+    if not _HEX_KEY_RE.fullmatch(hex_key):
+        raise ValueError("private_key must be 64 hex bytes (optional 0x prefix)")
+    return hex_key.lower()
+
+
 def load_account_hex(env: Mapping[str, str] | None = None) -> str | None:
     """Return normalized key hex, or None if unset or invalid (no raise)."""
     env = os.environ if env is None else env
     raw = (env.get("EVM_PRIVATE_KEY") or env.get("X402_BUYER_KEY") or "").strip()
     if not raw:
         return None
-    hex_key = raw if raw.startswith("0x") else f"0x{raw}"
-    if not _HEX_KEY_RE.fullmatch(hex_key):
+    try:
+        return normalize_account_hex(raw)
+    except ValueError:
         return None
-    return hex_key.lower()
 
 
 def require_account_hex(env: Mapping[str, str] | None = None) -> str:

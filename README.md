@@ -34,9 +34,9 @@ from readfetch import Client
 
 async def main():
     rf = Client()
-    check = rf.probe("https://example.com")
+    check = await rf.probe_async("https://example.com")
     if not check.get("challenge"):
-        rf.fetch("https://example.com")
+        await rf.fetch_async("https://example.com")
     page = await rf.call("map", {"url": "https://example.com", "limit": 20})
     job = await rf.call("crawl", {"url": "https://example.com", "max_pages": 3})
     await rf.call("crawl_status", None, path_params={"id": job["job_id"]})

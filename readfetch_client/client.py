@@ -19,6 +19,7 @@ from readfetch_client.http_json import assert_response_size, json_object_from_re
 from readfetch_client.payment import payment_from_response
 
 _TIMEOUT = 120.0
+_USER_AGENT = "readfetch-client-py/0.1.15"
 
 _x402_clients: dict[tuple[str, str, str], x402Client] = {}
 
@@ -62,7 +63,9 @@ async def _request_json(
     accept: tuple[int, ...],
     env: Mapping[str, str],
 ) -> tuple[dict[str, Any], str | None, httpx.Response]:
-    headers = {"content-type": "application/json"} if method != "GET" else {}
+    headers = {"user-agent": _USER_AGENT}
+    if method != "GET":
+        headers["content-type"] = "application/json"
     if paid:
         async with x402HttpxClient(_x402_client(env)) as http:
             if method == "GET":
@@ -151,7 +154,9 @@ async def quote(
     env = os.environ if env is None else env
     path = endpoint_path(name, path_params)
     url = readfetch_url(env, path)
-    headers = {"content-type": "application/json"} if spec.method != "GET" else {}
+    headers = {"user-agent": _USER_AGENT}
+    if spec.method != "GET":
+        headers["content-type"] = "application/json"
     async with httpx.AsyncClient(timeout=_TIMEOUT) as http:
         if spec.method == "GET":
             response = await http.get(url, headers=headers)

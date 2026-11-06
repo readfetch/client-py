@@ -6,6 +6,21 @@ from readfetch_client.http_json import json_object_from_response
 
 
 class ClientHelpersTest(unittest.TestCase):
+    def test_probe_and_claim_fail_before_network(self) -> None:
+        from readfetch_client import client
+
+        async def run() -> None:
+            with self.assertRaisesRegex(ValueError, "url is required"):
+                await client.probe("")
+            with self.assertRaisesRegex(ValueError, "receipt is required"):
+                await client.submit_claim({})
+            with self.assertRaisesRegex(ValueError, "reason must be"):
+                await client.submit_claim(
+                    {"receipt": "r", "reason": "bad", "address": "a", "signature": "s"}
+                )
+
+        __import__("asyncio").run(run())
+
     def test_official_client_sets_a_versioned_user_agent(self) -> None:
         from readfetch_client import client
 

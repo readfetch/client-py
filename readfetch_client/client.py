@@ -196,7 +196,7 @@ async def probe(url: str, *, env: Mapping[str, str] | None = None) -> dict:
 async def probe_with_meta(
     url: str, *, env: Mapping[str, str] | None = None
 ) -> tuple[dict, str | None]:
-    meta = await call_with_meta("probe", {"url": url}, env=env)
+    meta = await call_with_meta("probe", {"url": _required_string(url, "url")}, env=env)
     return meta["data"], meta["request_id"]
 
 
@@ -218,7 +218,26 @@ async def submit_feedback(
 async def submit_claim(
     claim: dict[str, Any], *, env: Mapping[str, str] | None = None
 ) -> dict:
-    return await call("claims", claim, env=env)
+    return await call("claims", _normalize_claim(claim), env=env)
+
+
+def _required_string(value: Any, name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name} is required")
+    return value
+
+
+def _normalize_claim(claim: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(claim, dict):
+        raise ValueError("claim must be an object")
+    for name in ("receipt", "reason", "address", "signature"):
+        _required_string(claim.get(name), name)
+    if claim["reason"] not in {"empty", "truncated", "stale", "wrong_content"}:
+        raise ValueError("reason must be empty, truncated, stale, or wrong_content")
+    note = claim.get("note")
+    if note is not None and (not isinstance(note, str) or len(note) > 500):
+        raise ValueError("note must be at most 500 characters")
+    return claim
 
 
 async def readfetch_text(

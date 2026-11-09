@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -19,7 +20,22 @@ from readfetch_client.http_json import assert_response_size, json_object_from_re
 from readfetch_client.payment import payment_from_response
 
 _TIMEOUT = 120.0
-_USER_AGENT = "readfetch-client-py/0.1.15"
+
+
+def _integrator_version() -> str:
+    try:
+        from importlib.metadata import version
+
+        return version("readfetch-client")
+    except Exception:
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        for line in pyproject.read_text(encoding="utf-8").splitlines():
+            if line.startswith("version = "):
+                return line.split('"')[1]
+        return "0.0.0"
+
+
+_USER_AGENT = f"readfetch-client-py/{_integrator_version()}"
 
 _x402_clients: dict[tuple[str, str, str], x402Client] = {}
 

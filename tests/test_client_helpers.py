@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 from readfetch_client.endpoints import export_name
@@ -24,6 +25,14 @@ class ClientHelpersTest(unittest.TestCase):
     def test_official_client_sets_a_versioned_user_agent(self) -> None:
         from readfetch_client import client
 
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        pkg_ver = next(
+            line.split('"')[1]
+            for line in pyproject.read_text(encoding="utf-8").splitlines()
+            if line.startswith("version = ")
+        )
+        expected_ua = f"readfetch-client-py/{pkg_ver}"
+
         async def run() -> None:
             response = __import__("httpx").Response(200, json={"billed": False})
             http = AsyncMock()
@@ -35,7 +44,7 @@ class ClientHelpersTest(unittest.TestCase):
                 )
             self.assertEqual(
                 http.__aenter__.return_value.post.call_args.kwargs["headers"]["user-agent"],
-                "readfetch-client-py/0.1.15",
+                expected_ua,
             )
 
         __import__("asyncio").run(run())

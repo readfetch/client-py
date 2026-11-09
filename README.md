@@ -80,4 +80,4 @@ async with x402_http_client() as http:
 | `READFETCH_MAX_PAYMENT_USD` | `1` | Per-payment spend cap |
 | `READFETCH_DEV=1` | off | Allow local base URL for integration tests |
 
-MCP: [`@readfetch/mcp-x402-proxy@0.1.15`](https://github.com/readfetch/mcp-x402-proxy). Feedback: [docs#feedback](https://readfetch.com/docs#feedback).
+MCP: [`@readfetch/mcp-x402-proxy@0.1.17`](https://github.com/readfetch/mcp-x402-proxy). Feedback: [docs#feedback](https://readfetch.com/docs#feedback).
